@@ -10,13 +10,13 @@ public interface SongRepository {
 
     Song getSongByTitle(String title);
 
-    void addNewSong(String title, String genre, int durInSec, String artistId);
+    String addNewSong(String title, String genre, int durInSec, String artistId);
 
     void updateSong(String songId, String... options);
 
     void deleteSong(String songId);
 
-    List<Song> getSongs(int limit, int offset);
+    List<Song> getSongs(int limit, int offset, String sortBy, boolean asc);
 
     List<Song> getSongsByGenre(String genre);
 
