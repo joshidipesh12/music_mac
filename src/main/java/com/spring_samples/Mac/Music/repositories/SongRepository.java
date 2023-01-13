@@ -1,6 +1,7 @@
-package com.spring_samples.Mac.Music.repository;
+package com.spring_samples.Mac.Music.repositories;
 
 import java.util.List;
+import java.util.Map;
 
 import com.spring_samples.Mac.Music.models.Song;
 
@@ -10,11 +11,11 @@ public interface SongRepository {
 
     Song getSongByTitle(String title);
 
-    String addNewSong(String title, String genre, int durInSec, String artistId);
+    boolean addNewSong(Song newSong);
 
-    void updateSong(String songId, String... options);
+    boolean updateSong(String songId, Map<String, String> options);
 
-    void deleteSong(String songId);
+    boolean deleteSong(String songId);
 
     List<Song> getSongs(int limit, int offset, String sortBy, boolean asc);
 

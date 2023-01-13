@@ -1,7 +1,7 @@
-package com.spring_samples.Mac.Music.repository;
+package com.spring_samples.Mac.Music.Services;
 
 import java.util.List;
-// import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -9,12 +9,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
+import com.mongodb.client.result.UpdateResult;
 import com.spring_samples.Mac.Music.models.Song;
+import com.spring_samples.Mac.Music.repositories.SongRepository;
 
 @Component
-public class SongServices implements SongRepository {
+public class SongService implements SongRepository {
 
     @Autowired
     MongoTemplate mongoTemplate;
@@ -26,14 +29,13 @@ public class SongServices implements SongRepository {
     }
 
     @Override
-    public Song getSongByTitle(String title) throws Error {
+    public Song getSongByTitle(String title) {
         Query findQuery = new Query(Criteria.where("title").is(title));
         return mongoTemplate.findOne(findQuery, Song.class);
     }
 
     @Override
     public List<Song> getSongs(int limit, int offset, String sortBy, boolean asc) {
-        // songs.stream().map(Song::toString).collect(Collectors.toList()).toString();
         Query query = new Query();
         Sort.Direction sortDirection = asc ? Sort.Direction.ASC : Sort.Direction.DESC;
         query.with(Sort.by(sortDirection, sortBy));
@@ -47,22 +49,28 @@ public class SongServices implements SongRepository {
     }
 
     @Override
-    public String addNewSong(String title, String genre, int durInSec, String artistId) {
-        Song newSong = new Song(title, genre, durInSec, artistId);
-        mongoTemplate.insert(newSong);
-        return newSong.getId();
+    public boolean addNewSong(Song newSong) {
+        Song savedSong = mongoTemplate.insert(newSong);
+        return savedSong != null;
     }
 
     @Override
-    public void updateSong(String songId, String... options) {
-        // TODO Auto-generated method stub
-
+    public boolean updateSong(String songId, Map<String, String> options) {
+        Query query = new Query(Criteria.where("id").is(songId));
+        Update updateQuery = new Update();
+        for (Map.Entry<String, String> entry : options.entrySet()) {
+            updateQuery.set(entry.getKey(), entry.getValue());
+        }
+        UpdateResult result = mongoTemplate.updateFirst(query, updateQuery,
+                Song.class);
+        return result != null;
     }
 
     @Override
-    public void deleteSong(String songId) {
-        // TODO Auto-generated method stub
-
+    public boolean deleteSong(String songId) {
+        Query query = new Query(Criteria.where("id").is(songId));
+        Song result = mongoTemplate.findAndRemove(query, Song.class);
+        return result != null;
     }
 
     @Override

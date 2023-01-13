@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,22 +17,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spring_samples.Mac.Music.models.Song;
-import com.spring_samples.Mac.Music.repository.SongRepository;
+import com.spring_samples.Mac.Music.repositories.SongRepository;
 
 /**
  * REST Controller for Songs Entity Related Endpoints.
  * Base URL: <b>/song</b>
- * <p> Autowired with {@link SongRepository} </p>
+ * <p>Autowired with {@link SongRepository}</p>
  */
 @RestController
 @RequestMapping("/song")
-public class SongControllers {
+public class SongController {
 
     @Autowired
     private SongRepository songReposit;
 
     /**
      * Get Song Details with song id/title.
+     * 
      * @param params - map containing either id, name or title
      * @return JSON response with song detains
      */
@@ -51,6 +54,7 @@ public class SongControllers {
 
     /**
      * Endpoint to get current Song Count.
+     * 
      * @return Count {@link Long} of total songs in the DB
      */
     @GetMapping("/count")
@@ -60,6 +64,7 @@ public class SongControllers {
 
     /**
      * Lists all songs belonging to provided genre.
+     * 
      * @param genre
      * @return Array of Songs.
      */
@@ -71,6 +76,14 @@ public class SongControllers {
         return ResponseEntity.ok().body(songs);
     }
 
+    /**
+     * Get the list of all songs. Suppoted features include, Pagination with limit &
+     * offset using {@link PageRequest} and Sorting results using {@link Sort}
+     * (default "views").
+     * 
+     * @param params - {@link Map} of request parameters ("limit", "offset", "sortBy" & "ascending")
+     * @return {@link List} of Songs as Response Entity
+     */
     @GetMapping("/list")
     public ResponseEntity<List<Song>> getSongs(@RequestParam final Map<String, String> params) {
         final int limit = Integer.parseInt(params.getOrDefault("limit", "20"));
@@ -80,22 +93,30 @@ public class SongControllers {
         return ResponseEntity.ok().body(songReposit.getSongs(limit, offset, sortBy, asc));
     }
 
+    /**
+     * Add a new song with provided details to the database.
+     * @param body - {@link Map} of request parameters ("title", "genre", "durInSec" & "artistId")
+     * @return ID of the {@link Song} newly added 
+     */
     @PostMapping("/")
     public ResponseEntity<String> addNewSong(@RequestBody final Map<String, String> body) {
         if (body == null)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Please provide proper details");
 
-        for (final String param : new String[] { "title", "genre", "durInSec", "artistId" }) 
+        for (final String param : new String[] { "title", "genre", "durInSec", "artistId" })
             if (!body.containsKey(param)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(String.format("Please provide proper details. [%s not found!]", param));
             }
 
+        Song newSong = new Song(body.get("title"), body.get("genre"),
+                Integer.parseInt(body.get("durInSec")), body.get("artistId"));
         try {
-            final String songId = songReposit.addNewSong(body.get("title"), body.get("genre"),
-                    Integer.parseInt(body.get("durInSec")), body.get("artistId"));
-            return ResponseEntity.ok(songId);
+            if (songReposit.addNewSong(newSong))
+                return ResponseEntity.ok(newSong.getId());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Unable to add song.");
         } catch (final Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
