@@ -35,11 +35,11 @@ public class SongService implements SongRepository {
     }
 
     @Override
-    public List<Song> getSongs(int limit, int offset, String sortBy, boolean asc) {
+    public List<Song> getSongs(int limit, int page, String sortBy, boolean asc) {
         Query query = new Query();
         Sort.Direction sortDirection = asc ? Sort.Direction.ASC : Sort.Direction.DESC;
         query.with(Sort.by(sortDirection, sortBy));
-        query.with(PageRequest.of(offset, limit));
+        query.with(PageRequest.of(page, limit));
         return mongoTemplate.find(query, Song.class);
     }
 

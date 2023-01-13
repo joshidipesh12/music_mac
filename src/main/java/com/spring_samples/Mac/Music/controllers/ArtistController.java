@@ -61,20 +61,20 @@ public class ArtistController {
     /**
      * Get the list of all Artists. Suppoted features include, Pagination with limit
      * &
-     * offset using {@link PageRequest} and Sorting results using {@link Sort}
+     * page using {@link PageRequest} and Sorting results using {@link Sort}
      * (default "followers").
      * 
-     * @param params - {@link Map} of request parameters ("limit", "offset",
+     * @param params - {@link Map} of request parameters ("limit", "page",
      *               "sortBy" & "ascending")
      * @return {@link List} of Artists as Response Entity
      */
     @GetMapping("/list")
     public ResponseEntity<List<Artist>> getArtists(@RequestParam final Map<String, String> params) {
         final int limit = Integer.parseInt(params.getOrDefault("limit", "5"));
-        final int offset = Integer.parseInt(params.getOrDefault("offset", "0"));
+        final int page = Integer.parseInt(params.getOrDefault("page", "0"));
         final String sortBy = params.getOrDefault("sortBy", "followers");
         final boolean asc = Boolean.parseBoolean(params.getOrDefault("ascending", "false"));
-        return ResponseEntity.ok().body(artistReposit.getArtists(limit, offset, sortBy, asc));
+        return ResponseEntity.ok().body(artistReposit.getArtists(limit, page, sortBy, asc));
     }
 
     /**

@@ -17,7 +17,7 @@ public interface SongRepository {
 
     boolean deleteSong(String songId);
 
-    List<Song> getSongs(int limit, int offset, String sortBy, boolean asc);
+    List<Song> getSongs(int limit, int page, String sortBy, boolean asc);
 
     List<Song> getSongsByGenre(String genre);
 

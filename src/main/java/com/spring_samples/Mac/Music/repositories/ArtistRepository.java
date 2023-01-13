@@ -17,7 +17,7 @@ public interface ArtistRepository {
 
     boolean deleteArtist(String artistId);
 
-    List<Artist> getArtists(int limit, int offset, String sortBy, boolean asc);
+    List<Artist> getArtists(int limit, int page, String sortBy, boolean asc);
 
     public long artistsCount();
 }

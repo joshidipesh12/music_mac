@@ -78,19 +78,19 @@ public class SongController {
 
     /**
      * Get the list of all songs. Suppoted features include, Pagination with limit &
-     * offset using {@link PageRequest} and Sorting results using {@link Sort}
+     * page using {@link PageRequest} and Sorting results using {@link Sort}
      * (default "views").
      * 
-     * @param params - {@link Map} of request parameters ("limit", "offset", "sortBy" & "ascending")
+     * @param params - {@link Map} of request parameters ("limit", "page", "sortBy" & "ascending")
      * @return {@link List} of Songs as Response Entity
      */
     @GetMapping("/list")
     public ResponseEntity<List<Song>> getSongs(@RequestParam final Map<String, String> params) {
         final int limit = Integer.parseInt(params.getOrDefault("limit", "20"));
-        final int offset = Integer.parseInt(params.getOrDefault("offset", "0"));
+        final int page = Integer.parseInt(params.getOrDefault("page", "0"));
         final String sortBy = params.getOrDefault("sortBy", "views");
         final boolean asc = Boolean.parseBoolean(params.getOrDefault("ascending", "false"));
-        return ResponseEntity.ok().body(songReposit.getSongs(limit, offset, sortBy, asc));
+        return ResponseEntity.ok().body(songReposit.getSongs(limit, page, sortBy, asc));
     }
 
     /**
