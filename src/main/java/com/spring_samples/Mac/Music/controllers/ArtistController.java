@@ -6,8 +6,10 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -70,7 +72,7 @@ public class ArtistController {
      */
     @GetMapping("/list")
     public ResponseEntity<List<Artist>> getArtists(@RequestParam final Map<String, String> params) {
-        final int limit = Integer.parseInt(params.getOrDefault("limit", "5"));
+        final int limit = Integer.parseInt(params.getOrDefault("limit", "10"));
         final int page = Integer.parseInt(params.getOrDefault("page", "0"));
         final String sortBy = params.getOrDefault("sortBy", "followers");
         final boolean asc = Boolean.parseBoolean(params.getOrDefault("ascending", "false"));
@@ -80,8 +82,8 @@ public class ArtistController {
     /**
      * Add a new artist with provided details to the database.
      * 
-     * @param body - {@link Map} of request parameters ("title", "genre", "durInSec"
-     *             & "artistId")
+     * @param body - {@link Map} of request parameters ("name", "gender", "bio",
+     *             "url", "age")
      * @return ID of the {@link Artist} newly added
      */
     @PostMapping("/")
@@ -96,16 +98,48 @@ public class ArtistController {
                         .body(String.format("Please provide proper details. [%s not found!]", param));
             }
 
-        Artist newartist = new Artist(body.get("name"), body.get("gender"), body.get("bio"), body.get("url"),
-                Integer.parseInt(body.get("age")));
+        Artist newArtist = new Artist(body.get("name"), body.get("gender"), body.get("bio"),
+                body.get("url"), Integer.parseInt(body.get("age")));
         try {
-            if (artistReposit.addNewArtist(newartist))
-                return ResponseEntity.ok(newartist.getId());
+            if (artistReposit.addNewArtist(newArtist))
+                return ResponseEntity.ok(newArtist.getId());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Unable to add artist.");
         } catch (final Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
         }
+    }
+
+    /**
+     * Update an existing Artist in database using Id
+     * 
+     * @param ArtistId - Id of the Artist
+     * @param body     - Other params to update
+     * @return response json with updated Artist
+     */
+    @PutMapping("/")
+    public ResponseEntity<Artist> updateArtist(@RequestParam String artistId, @RequestBody Map<String, String> body) {
+        boolean result = artistReposit.updateArtist(artistId, body);
+        if (!result)
+            return ResponseEntity.internalServerError().build();
+
+        Artist updatedArtist = artistReposit.getArtistById(artistId);
+        return ResponseEntity.ok(updatedArtist);
+    }
+
+    /**
+     * Remove a Artist from db using its id
+     * 
+     * @param artistId - Id of the Artist to be deleted
+     * @return boolean response if the Artist is deleted or not
+     */
+    @DeleteMapping("/")
+    public ResponseEntity<Boolean> removeArtist(@RequestParam String artistId) {
+        boolean result = artistReposit.deleteArtist(artistId);
+        if (!result)
+            return ResponseEntity.internalServerError().build();
+
+        return ResponseEntity.ok(true);
     }
 }

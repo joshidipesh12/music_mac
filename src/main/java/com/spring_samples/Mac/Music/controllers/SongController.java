@@ -8,9 +8,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +24,9 @@ import com.spring_samples.Mac.Music.repositories.SongRepository;
 /**
  * REST Controller for Songs Entity Related Endpoints.
  * Base URL: <b>/song</b>
- * <p>Autowired with {@link SongRepository}</p>
+ * <p>
+ * Autowired with {@link SongRepository}
+ * </p>
  */
 @RestController
 @RequestMapping("/song")
@@ -81,7 +85,8 @@ public class SongController {
      * page using {@link PageRequest} and Sorting results using {@link Sort}
      * (default "views").
      * 
-     * @param params - {@link Map} of request parameters ("limit", "page", "sortBy" & "ascending")
+     * @param params - {@link Map} of request parameters ("limit", "page", "sortBy"
+     *               & "ascending")
      * @return {@link List} of Songs as Response Entity
      */
     @GetMapping("/list")
@@ -95,8 +100,10 @@ public class SongController {
 
     /**
      * Add a new song with provided details to the database.
-     * @param body - {@link Map} of request parameters ("title", "genre", "durInSec" & "artistId")
-     * @return ID of the {@link Song} newly added 
+     * 
+     * @param body - {@link Map} of request parameters ("title", "genre", "durInSec"
+     *             & "artistId")
+     * @return ID of the {@link Song} newly added
      */
     @PostMapping("/")
     public ResponseEntity<String> addNewSong(@RequestBody final Map<String, String> body) {
@@ -121,5 +128,37 @@ public class SongController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
         }
+    }
+
+    /**
+     * Update an existing song in database using Id
+     * 
+     * @param songId - Id of the song
+     * @param body   - Other params to update
+     * @return response json with updated song
+     */
+    @PutMapping("/")
+    public ResponseEntity<Song> updateSong(@RequestParam String songId, @RequestBody Map<String, String> body) {
+        boolean result = songReposit.updateSong(songId, body);
+        if (!result)
+            return ResponseEntity.internalServerError().build();
+
+        Song updatedSong = songReposit.getSongById(songId);
+        return ResponseEntity.ok(updatedSong);
+    }
+
+    /**
+     * Remove a song from db using its id
+     * 
+     * @param songId - Id of the song to be deleted
+     * @return boolean response if the song is deleted or not
+     */
+    @DeleteMapping("/")
+    public ResponseEntity<Boolean> removeSong(@RequestParam String songId) {
+        boolean result = songReposit.deleteSong(songId);
+        if (!result)
+            return ResponseEntity.internalServerError().build();
+
+        return ResponseEntity.ok(true);
     }
 }
